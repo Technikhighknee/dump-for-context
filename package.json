@@ -1,0 +1,31 @@
+{
+  "name": "dump-for-context",
+  "version": "1.0.0",
+  "description": "A CLI tool to generate structured, Markdown-based context snapshots of your codebase — for language models, AI agents, and documentation workflows.",
+  "author": "Jason Posch <technikhighknee>",
+  "license": "Unlicense",
+  "type": "module",
+  "main": "./src/dump-context.js",
+  "bin": {
+    "dump-for-context": "./bin/dump-for-context.js"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "directories": {
+    "test": "src/test"
+  },
+  "keywords": [
+    "context",
+    "language-model",
+    "markdown",
+    "gpt",
+    "prompting",
+    "cli",
+    "dump"
+  ],
+  "devDependencies": {
+    "vitest": "^3.1.4"
+  }
+}
