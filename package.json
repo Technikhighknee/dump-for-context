@@ -1,6 +1,6 @@
 {
   "name": "dump-for-context",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A CLI tool to generate structured, Markdown-based context snapshots of your codebase — for language models, AI agents, and documentation workflows.",
   "author": "Jason Posch <technikhighknee>",
   "license": "Unlicense",
