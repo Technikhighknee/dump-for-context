@@ -7,7 +7,7 @@
   "type": "module",
   "main": "./src/dump-context.js",
   "bin": {
-    "dump-for-context": "./bin/dump-for-context.js"
+    "dump-for-context": "bin/dump-for-context.js"
   },
   "scripts": {
     "test": "vitest run",
