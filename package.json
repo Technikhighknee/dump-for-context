@@ -9,6 +9,10 @@
   "bin": {
     "dump-for-context": "bin/dump-for-context.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/technikhighknee/dump-for-context.git"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest"
