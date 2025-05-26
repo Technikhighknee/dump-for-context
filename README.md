@@ -55,7 +55,7 @@ This will:
 
 * Look for `dump.config.js` in your current directory (if available)
 * Use the `default` export for configuration
-* Output a file (default: `context.md`) in your root folder
+* Output a file (default: `context-dump.md`) in your root folder
 
 ---
 
@@ -90,12 +90,12 @@ You can define **multiple named configurations** in a single file:
 ```js
 // dump.config.js
 export default {
-  outputFile: 'context.md',
+  outputFile: 'context-dump.md',
   ignoredDirs: ['.git', 'node_modules'],
 };
 
 export const gpt = {
-  outputFile: 'context.gpt.md',
+  outputFile: 'context-dump.gpt.md',
   ignoredDirs: ['.git', 'node_modules', 'dist'],
   languageMap: {
     js: 'javascript',
