@@ -15,6 +15,7 @@ import { fileURLToPath } from 'url';
  * @param {string} [config.rootDir=process.cwd()] - The base directory to start scanning from.
  * @param {string} [config.outputFile='context-dump.md'] - Output file name, relative to rootDir.
  * @param {string[]} [config.ignoredDirs=['.git', 'node_modules']] - Directory names to skip.
+ * @param {string[]} [config.ignoredPatterns=[]] - Glob patterns for files or directories to exclude.
  * @param {Object<string, string>} [config.languageMap] - Maps file extensions to Markdown language tags.
  */
 export function generateContextDump(config = {}) {
@@ -22,6 +23,7 @@ export function generateContextDump(config = {}) {
     rootDir = process.cwd(),
     outputFile = 'context-dump.md',
     ignoredDirs = ['.git', 'node_modules'],
+    ignoredPatterns = [],
     languageMap = {
       js: 'js',
       ts: 'ts',
@@ -36,6 +38,43 @@ export function generateContextDump(config = {}) {
   } = config;
 
   const IGNORED = new Set(ignoredDirs);
+  const PATTERN_RE = ignoredPatterns.map(globToRegExp);
+
+  const matchesIgnored = (rel, isDir = false) => {
+    const pathForms = [rel, '/' + rel];
+    if (isDir) {
+      pathForms.push(rel + '/', '/' + rel + '/');
+    }
+    return PATTERN_RE.some(re => pathForms.some(p => re.test(p)));
+  };
+
+  function globToRegExp(glob) {
+    const special = /[.+^${}()|\[\]\\]/g;
+    let re = '';
+    let i = 0;
+    while (i < glob.length) {
+      const c = glob[i];
+      if (c === '*') {
+        if (glob[i + 1] === '*') {
+          re += '.*';
+          i++;
+        } else {
+          re += '[^/]*';
+        }
+      } else if (c === '?') {
+        re += '[^/]';
+      } else if (c === '[') {
+        const j = glob.indexOf(']', i);
+        const stuff = glob.slice(i, j + 1);
+        re += stuff;
+        i = j;
+      } else {
+        re += c.replace(special, '\\$&');
+      }
+      i++;
+    }
+    return new RegExp('^' + re + '$');
+  }
 
   /**
    * Recursively collects all non-ignored files in the directory.
@@ -49,14 +88,16 @@ export function generateContextDump(config = {}) {
 
     for (const entry of entries) {
       const full = path.join(dir, entry.name);
+      const rel = path.relative(rootDir, full).split(path.sep).join('/');
       if (entry.isDirectory()) {
-        if (!IGNORED.has(entry.name)) {
+        if (!IGNORED.has(entry.name) && !matchesIgnored(rel, true)) {
           collectFiles(full, collected);
         }
       } else if (entry.isFile()) {
-        const rel = path.relative(rootDir, full);
         if (rel === outputFile) continue; // Don't include the dump itself
-        collected.push(full);
+        if (!matchesIgnored(rel, false)) {
+          collected.push(full);
+        }
       }
     }
 

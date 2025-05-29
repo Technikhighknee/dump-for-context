@@ -92,19 +92,25 @@ You can define **multiple named configurations** in a single file:
 export default {
   outputFile: 'context-dump.md',
   ignoredDirs: ['.git', 'node_modules'],
+  ignoredPatterns: ['**/dev/**'],
 };
 
 export const gpt = {
   outputFile: 'context-dump.gpt.md',
   ignoredDirs: ['.git', 'node_modules', 'dist'],
+  ignoredPatterns: ['**/*.log', '*.tmp'],
   languageMap: {
     js: 'javascript',
     md: 'markdown',
     yml: 'yaml',
     txt: 'text',
-  }
+  } 
 };
 ```
+
+`ignoredPatterns` uses glob-style wildcards against relative paths. If either
+`ignoredDirs` **or** `ignoredPatterns` match a path, that file or directory is
+skipped.
 
 ### CLI options
 
@@ -141,6 +147,7 @@ If no config is given, this fallback is used internally:
 {
   outputFile: 'context-dump.md',
   ignoredDirs: ['.git', 'node_modules'],
+  ignoredPatterns: [],
   languageMap: {
     js: 'js',
     ts: 'ts',
