@@ -98,4 +98,62 @@ describe('generateContextDump', () => {
       { path: 'c.md', lang: 'md', content: 'z' },
     ]);
   });
+
+  it('excludes files matching ignoredPatterns', () => {
+    add('keep.js', '1');
+    add('log/error.log', 'nope');
+
+    generateContextDump({
+      rootDir: tmpDir,
+      ignoredPatterns: ['**/*.log'],
+    });
+
+    const blocks = parseBlocks();
+    expect(blocks.map(b => b.path)).toEqual(['keep.js']);
+  });
+
+  it('skips directories matching ignoredPatterns', () => {
+    add('dev/a.js', 'A');
+    add('dev/sub/b.js', 'B');
+    add('main.js', 'M');
+
+    generateContextDump({
+      rootDir: tmpDir,
+      ignoredPatterns: ['**/dev/**'],
+    });
+
+    const blocks = parseBlocks();
+    expect(blocks.map(b => b.path)).toEqual(['main.js']);
+  });
+
+  it('maintains language detection and ordering', () => {
+    add('a.js', 'x');
+    add('z.ts', 'z');
+    add('b.ts', 'y');
+
+    generateContextDump({
+      rootDir: tmpDir,
+      ignoredPatterns: ['z.ts'],
+    });
+
+    const blocks = parseBlocks();
+    expect(blocks).toEqual([
+      { path: 'a.js', lang: 'js', content: 'x' },
+      { path: 'b.ts', lang: 'ts', content: 'y' },
+    ]);
+  });
+
+  it('behaves like legacy when patterns empty', () => {
+    add('keep.js', '1');
+    add('skip/ignore.txt', 'n');
+
+    generateContextDump({
+      rootDir: tmpDir,
+      ignoredDirs: ['skip'],
+      ignoredPatterns: [],
+    });
+
+    const blocks = parseBlocks();
+    expect(blocks.map(b => b.path)).toEqual(['keep.js']);
+  });
 });
