@@ -156,4 +156,14 @@ describe('generateContextDump', () => {
     const blocks = parseBlocks();
     expect(blocks.map(b => b.path)).toEqual(['keep.js']);
   });
+
+  it('ignores nested context-dump files', () => {
+    add('a.js', 'x');
+    add('nested/context-dump.md', 'old dump');
+
+    generateContextDump({ rootDir: tmpDir });
+
+    const blocks = parseBlocks();
+    expect(blocks.map(b => b.path)).toEqual(['a.js']);
+  });
 });
