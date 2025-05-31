@@ -10,8 +10,33 @@ const configPath = path.join(process.cwd(), CONFIG_FILENAME);
 
 // --- Parse CLI args ---
 const args = process.argv.slice(2);
-const configFlagIndex = args.indexOf('--config');
-const configKey = configFlagIndex !== -1 ? args[configFlagIndex + 1] : null;
+
+function readFlag(flag) {
+  const idx = args.indexOf(flag);
+  return idx !== -1 ? args[idx + 1] : undefined;
+}
+
+const configKey = readFlag('--config');
+let rootArg = readFlag('--root');
+let outputArg = readFlag('--output');
+const ignoreDirsArg = readFlag('--ignore-dirs');
+const ignorePatternsArg = readFlag('--ignore-patterns');
+const languageMapArg = readFlag('--language-map');
+
+const consumed = new Set([
+  '--config', configKey,
+  '--root', rootArg,
+  '--output', outputArg,
+  '--ignore-dirs', ignoreDirsArg,
+  '--ignore-patterns', ignorePatternsArg,
+  '--language-map', languageMapArg,
+]);
+
+for (const arg of args) {
+  if (!arg.startsWith('--') && !consumed.has(arg) && !rootArg) {
+    rootArg = arg;
+  }
+}
 
 /**
  * Loads the configuration module and returns the selected export.
@@ -45,4 +70,31 @@ async function loadConfig() {
 }
 
 const config = await loadConfig();
+
+if (rootArg) {
+  config.rootDir = path.resolve(rootArg);
+}
+if (outputArg) {
+  config.outputFile = outputArg;
+}
+if (ignoreDirsArg) {
+  config.ignoredDirs = ignoreDirsArg.split(',').map(s => s.trim());
+}
+if (ignorePatternsArg) {
+  config.ignoredPatterns = ignorePatternsArg.split(',').map(s => s.trim());
+}
+if (languageMapArg) {
+  try {
+    config.languageMap = JSON.parse(languageMapArg);
+  } catch (err) {
+    console.error('[dump-for-context] Failed to parse --language-map JSON');
+    process.exit(1);
+  }
+}
+
+if (rootArg && !outputArg) {
+  const absOut = path.join(process.cwd(), 'context-dump.md');
+  config.outputFile = path.relative(config.rootDir, absOut);
+}
+
 generateContextDump(config);

@@ -13,6 +13,7 @@ But feeding your entire codebase into a model is messy, error-prone, or just imp
 
 * 📂 It walks your directory tree
 * 🧹 Ignores irrelevant folders like `.git`, `node_modules`, etc.
+* 🚫 Skips any existing `context-dump.md` files
 * 🗞 Wraps every file in syntax-highlighted, readable Markdown blocks
 * 🧠 Produces a single `context-dump.md` file — ideal as input for LLMs, summarizers, or codex-style agents
 
@@ -115,8 +116,16 @@ skipped.
 ### CLI options
 
 ```bash
-dump-for-context               # uses default export
-dump-for-context --config gpt # uses named export `gpt`
+# basic usage
+dump-for-context [path]               # dump from `path`, output in CWD
+
+# with flags
+dump-for-context --config gpt        # uses named export `gpt`
+dump-for-context --root src          # set root directory
+dump-for-context --output custom.md  # custom output file
+dump-for-context --ignore-dirs build,dist
+dump-for-context --ignore-patterns "**/*.log"
+dump-for-context --language-map '{"js":"javascript"}'
 ```
 
 If no config is found:
@@ -157,10 +166,11 @@ If no config is given, this fallback is used internally:
     yml: 'yaml',
     yaml: 'yaml',
     txt: 'txt',
-    lic: 'txt',
+  lic: 'txt',
   }
 }
 ````
+`context-dump.md` files are skipped automatically, even if not listed in `ignoredPatterns`.
 
 ---
 

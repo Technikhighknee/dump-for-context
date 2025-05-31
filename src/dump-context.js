@@ -39,6 +39,7 @@ export function generateContextDump(config = {}) {
 
   const IGNORED = new Set(ignoredDirs);
   const PATTERN_RE = ignoredPatterns.map(globToRegExp);
+  const DUMP_BASENAME = 'context-dump.md';
 
   const matchesIgnored = (rel, isDir = false) => {
     const pathForms = [rel, '/' + rel];
@@ -95,6 +96,7 @@ export function generateContextDump(config = {}) {
         }
       } else if (entry.isFile()) {
         if (rel === outputFile) continue; // Don't include the dump itself
+        if (path.basename(rel) === DUMP_BASENAME) continue; // ignore any nested dump files
         if (!matchesIgnored(rel, false)) {
           collected.push(full);
         }
@@ -125,7 +127,10 @@ export function generateContextDump(config = {}) {
 
   const files = collectFiles(rootDir);
   const content = files.sort().map(formatFileContent).join('\n');
-  fs.writeFileSync(path.join(rootDir, outputFile), content);
+  const outPath = path.isAbsolute(outputFile)
+    ? outputFile
+    : path.join(rootDir, outputFile);
+  fs.writeFileSync(outPath, content);
 }
 
 //
