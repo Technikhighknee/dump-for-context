@@ -166,4 +166,19 @@ describe('generateContextDump', () => {
     const blocks = parseBlocks();
     expect(blocks.map(b => b.path)).toEqual(['a.js']);
   });
+
+  it('splits output respecting maxLines without splitting blocks', () => {
+    add('a.js', 'A');
+    add('b.js', 'B');
+    add('c.js', 'C');
+
+    // Each block is 4 lines; with the joining newline, two blocks are 9 lines.
+    generateContextDump({ rootDir: tmpDir, maxLines: 9 });
+
+    const first = parseBlocks('context-dump.md');
+    const second = parseBlocks('context-dump.1.md');
+
+    expect(first.map(b => b.path)).toEqual(['a.js', 'b.js']);
+    expect(second.map(b => b.path)).toEqual(['c.js']);
+  });
 });

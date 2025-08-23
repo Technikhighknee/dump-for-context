@@ -22,6 +22,7 @@ let outputArg = readFlag('--output');
 const ignoreDirsArg = readFlag('--ignore-dirs');
 const ignorePatternsArg = readFlag('--ignore-patterns');
 const languageMapArg = readFlag('--language-map');
+const maxLinesArg = readFlag('--max-lines');
 
 const consumed = new Set([
   '--config', configKey,
@@ -30,6 +31,7 @@ const consumed = new Set([
   '--ignore-dirs', ignoreDirsArg,
   '--ignore-patterns', ignorePatternsArg,
   '--language-map', languageMapArg,
+  '--max-lines', maxLinesArg,
 ]);
 
 for (const arg of args) {
@@ -90,6 +92,14 @@ if (languageMapArg) {
     console.error('[dump-for-context] Failed to parse --language-map JSON');
     process.exit(1);
   }
+}
+if (maxLinesArg) {
+  const n = parseInt(maxLinesArg, 10);
+  if (Number.isNaN(n)) {
+    console.error('[dump-for-context] --max-lines requires a number');
+    process.exit(1);
+  }
+  config.maxLines = n;
 }
 
 if (rootArg && !outputArg) {
