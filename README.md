@@ -126,6 +126,7 @@ dump-for-context --output custom.md  # custom output file
 dump-for-context --ignore-dirs build,dist
 dump-for-context --ignore-patterns "**/*.log"
 dump-for-context --language-map '{"js":"javascript"}'
+dump-for-context --max-lines 500       # split output into multiple files
 ```
 
 If no config is found:
@@ -166,8 +167,9 @@ If no config is given, this fallback is used internally:
     yml: 'yaml',
     yaml: 'yaml',
     txt: 'txt',
-  lic: 'txt',
-  }
+    lic: 'txt',
+  },
+  maxLines: Infinity,
 }
 ````
 `context-dump.md` files are skipped automatically, even if not listed in `ignoredPatterns`.

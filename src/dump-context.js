@@ -17,9 +17,10 @@ import { fileURLToPath } from 'url';
  * @param {string[]} [config.ignoredDirs=['.git', 'node_modules']] - Directory names to skip.
  * @param {string[]} [config.ignoredPatterns=[]] - Glob patterns for files or directories to exclude.
  * @param {Object<string, string>} [config.languageMap] - Maps file extensions to Markdown language tags.
+ * @param {number} [config.maxLines=Infinity] - Maximum number of lines per output file.
  */
 export function generateContextDump(config = {}) {
-  const {
+ const {
     rootDir = process.cwd(),
     outputFile = 'context-dump.md',
     ignoredDirs = ['.git', 'node_modules'],
@@ -35,6 +36,7 @@ export function generateContextDump(config = {}) {
       txt: 'txt',
       lic: 'txt',
     },
+    maxLines = Infinity,
   } = config;
 
   const IGNORED = new Set(ignoredDirs);
@@ -125,12 +127,56 @@ export function generateContextDump(config = {}) {
     return [header, fence, body, '```', ''].join('\n');
   };
 
-  const files = collectFiles(rootDir);
-  const content = files.sort().map(formatFileContent).join('\n');
+  const files = collectFiles(rootDir).sort();
   const outPath = path.isAbsolute(outputFile)
     ? outputFile
     : path.join(rootDir, outputFile);
-  fs.writeFileSync(outPath, content);
+  const { dir, name, ext } = path.parse(outPath);
+
+  const makePath = (idx) => idx === 0
+    ? outPath
+    : path.join(dir, `${name}.${idx}${ext}`);
+
+  let fileIdx = 0;
+  let currentLines = 0;
+  let buffer = [];
+
+  const flush = () => {
+    if (!buffer.length) return;
+    fs.writeFileSync(makePath(fileIdx), buffer.join('\n'));
+    buffer = [];
+    currentLines = 0;
+    fileIdx++;
+  };
+
+  const countLines = (text) => text.split('\n').length - 1;
+
+  const appendBlock = (block) => {
+    const blockLines = countLines(block);
+    const separatorLines = buffer.length ? 1 : 0;
+    const projected = currentLines + blockLines + separatorLines;
+
+    if (currentLines && projected > maxLines) {
+      flush();
+    }
+
+    if (buffer.length) {
+      currentLines += 1; // account for newline join
+    }
+
+    buffer.push(block);
+    currentLines += blockLines;
+
+    if (currentLines >= maxLines) {
+      flush();
+    }
+  };
+
+  for (const file of files) {
+    appendBlock(formatFileContent(file));
+  }
+
+  flush();
 }
 
 //
